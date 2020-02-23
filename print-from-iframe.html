@@ -1,0 +1,166 @@
+<html>
+  <head>
+    <title>Print via iframe</title>
+
+    <style type="text/css">
+      /*iframe {
+        width: 100%;
+        height: 80vh;
+        border: 2px solid grey;
+      }*/
+
+      .visually-hidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        clip: rect(0 0 0 0) !important;
+        -webkit-clip-path: inset(50%) !important;
+        clip-path: inset(50%) !important;
+        border: 0 !important;
+        white-space: nowrap !important;
+      }
+
+      button {
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        text-transform: uppercase;
+        font-weight: bold;
+        outline: none;
+        border: 3px solid #999999;
+        cursor: pointer;
+        margin-bottom: 1rem;
+        background: #000000;
+        color: #ffffff;
+      }
+
+      .centred-container {
+        left: 50%;
+        top: 50%;
+        position: absolute;
+        transform: translate(-50%, -50%);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="centred-container">
+        <button type="button" id="print-button">🐈 PRINT DOCUMENT 🐈</button>
+      </div>
+    </main>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.min.js"></script>
+    <script type="text/javascript" src="scripts/image-loader.js"></script>
+    <script type="text/javascript">
+      (function() {
+        var pdfPrinter = {};
+        var _this = pdfPrinter;
+        
+        // MOCK image sources
+        _this.imageSources = [
+          'http://placekitten.com/g/2000/3000',
+          'http://placekitten.com/g/4000/500',
+          'http://placekitten.com/g/3000/800',
+          'http://placekitten.com/g/600/200',
+          'http://placekitten.com/g/2000/2000'
+        ];
+        
+        // Self invoking kick off method
+        (function init() {
+          // Create iframe
+          _this.iframe = document.createElement('iframe');
+          _this.iframe.setAttribute('src', 'about:blank');
+          _this.iframe.setAttribute('id', 'print-iframe');
+          _this.iframe.setAttribute('class', 'visually-hidden');
+          document.body.appendChild(_this.iframe);
+        
+          // Initialise the button
+          _this.button = document.querySelector('#print-button');
+          _this.button.addEventListener('click', (e) => {
+            populateDocument();
+          });
+
+          // Prepare the image preloader
+          prepareImagePreloading();
+        })();
+
+        // Build the MOCK contents from various documents
+        // Make sure that the images from the contents are listed for preloading
+        function populateDocument() {
+          var htmlContent = `<button class="button-warning pure-button">Warning Button</button>`;
+          htmlContent += `<article>`;
+            htmlContent += `<h1>Document with kittens 🐈 🐈 🐈</h1>`;
+            htmlContent += `<p>This document was generated at ${generateDate()}</p>`;
+          htmlContent += `</article>`;
+          htmlContent += `<article>`;
+            htmlContent += `<h1>Kitten #1</h1>`;
+            htmlContent += `<img src="${_this.imageSources[0]}" alt="kitten" />`;
+          htmlContent += `</article>`;
+          htmlContent += `<article>`;
+            htmlContent += `<h1>Kitten #2</h1>`;
+            htmlContent += `<img src="${_this.imageSources[1]}" alt="kitten" />`;
+          htmlContent += `</article>`;
+          htmlContent += `<article>`;            
+            htmlContent += `<h1>Kitten #3</h1>`;
+            htmlContent += `<img src="${_this.imageSources[2]}" alt="kitten" />`;
+          htmlContent += `</article>`;
+          htmlContent += `<article>`;
+            htmlContent += `<h1>Kitten #4</h1>`;
+            htmlContent += `<img src="${_this.imageSources[3]}" alt="kitten" />`;
+          htmlContent += `</article>`;
+          htmlContent += `<article>`;
+            htmlContent += `<h1>Kitten #5</h1>`;
+            htmlContent += `<img src="${_this.imageSources[4]}" alt="kitten" />`;
+          htmlContent += `</article>`;
+          
+          _this.imageLoader.reset(); // Manually reset the image loader
+          _this.imageLoader.addToQueue(_this.imageSources);
+
+          renderContent(htmlContent);
+        }
+
+        // Render the html content into the iframe using print styling
+        function renderContent(htmlContent) {
+          // Prepare the HTML document
+          var documentSource =  '<html><head>';
+          documentSource += '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/1.0.1/pure-min.css" media="screen" />';
+          documentSource += '<link rel="stylesheet" href="styles/print.css" />';
+          documentSource += '<body></body></html>';
+
+          // Write the HTML document into the iframe
+          var iframeDoc = _this.iframe.contentWindow.document;
+          iframeDoc.open('text/html', 'replace');
+          iframeDoc.write(documentSource);
+          iframeDoc.close();
+
+          // Use the MOCK content
+          iframeDoc.body.innerHTML += htmlContent;
+
+          // Preload the images to make sure everything prints fine
+          _this.imageLoader.loadQueue();
+        }
+
+        function prepareImagePreloading() {
+          if (!_this.imageLoader) {
+            _this.imageLoader = new ImageLoader();
+
+            $(_this.imageLoader).on('progress', (e, progress) => {
+              console.log('load progress: ', `${progress*100}%`);
+            });
+            $(_this.imageLoader).on('completed', () => {
+              setTimeout(() => {
+                _this.iframe.contentWindow.print();
+              }, 1000);
+            });
+          }
+        }
+
+        function generateDate() {
+          return Date.now();
+        }
+      })();
+    </script>
+  </body>
+</html>

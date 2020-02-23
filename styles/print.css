@@ -1,0 +1,60 @@
+@media print {
+  @page {
+    size: A4;
+    margin: 2cm;
+    counter-increment: page;
+  }
+
+  @page:first {
+    margin-top: 10cm;
+  }
+
+  body {
+    font-family: Arial, Verdana, sans-serif;
+    line-height: 1.4;
+  }
+
+  article {
+    position: relative;
+    page-break-before: always;
+    counter-increment: page;
+  }
+
+  article:after {
+    content: " PAGE - " counter(page);
+    position: absolute;
+    bottom: -100px;
+    right: 15px;
+    z-index: 999;
+    padding: 2px 12px;
+    border-right: 2px solid #000000;
+    font-size: 16pt;
+  }
+
+  h1 {
+    font-size: 24pt;
+    margin-bottom: 24pt;
+  }
+
+  img {
+    max-width: 100%;
+    page-break-before: always;
+    page-break-after: auto;
+    page-break-inside: avoid;
+  }
+
+  .visually-hidden,
+  button {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    -webkit-clip-path: inset(50%) !important;
+    clip-path: inset(50%) !important;
+    border: 0 !important;
+    white-space: nowrap !important;
+  }
+}
